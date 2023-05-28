@@ -1,0 +1,133 @@
+<head>
+    <title>Skyscape</title>
+    <link rel="icon" type="image/png" href="https://skyscape.cc/favicon.png">
+    <link rel="stylesheet" href="https://skyscape.cc/main.css">
+    <script>
+        // Functions
+        var wait = (ms) => {
+            const start = Date.now();
+            let now = start;
+            while (now - start < ms) {
+                now = Date.now();
+            }
+        }
+
+        function acesNum(n) {
+            return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        // Game Stat Pages
+        async function getStats() {
+            let formError;
+            if (event.target.elements.username.value.length == 0) {
+                let formError = 'Must enter a valid username';
+                document.getElementById("formError").innerHTML = formError;
+                return false;
+            } else if (event.target.elements.username.value.length < 3) {
+                let formError = 'Usernames must be between 3 and 16 characters.';
+                document.getElementById("formError").innerHTML = formError;
+                return false;
+            } else if (event.target.elements.username.value.length > 16) {
+                let formError = 'Usernames must be between 3 and 16 characters.';
+                document.getElementById("formError").innerHTML = formError;
+                return false;
+            } else {
+                let formError = '';
+                document.getElementById("formError").innerHTML = formError;
+            }
+            let url = 'https://skyscape.cc/v2/profile/' + event.target.elements.username.value;
+            try {
+                let res = await fetch(url);
+                if (res.status == 404) {
+                    let formError = 'This user doesn\'t seem to exist.';
+                    document.getElementById("formError").innerHTML = formError;
+                    return res.status
+                } else if (res.status == 429) {
+                    let formError = 'Woah! Slow down there buddy!';
+                    document.getElementById("formError").innerHTML = formError;
+                    return res.status
+                } else if (res.status !== 200) {
+                    let formError = 'An error has occured whilst fetching ' + event.target.elements.username.value + '\'s stats!<br />Try again later.';
+                    document.getElementById("formError").innerHTML = formError;
+                    return res.status;
+                } else {
+                    return await res.json();
+                }
+
+            } catch (error) {
+                console.log(error);
+            }
+        }
+        async function renderStats() {
+            document.getElementById("statpage").innerHTML = '';
+            let stats = await getStats();
+            if (JSON.stringify(stats) == '[]') {
+                let formError = 'This user has not played this game before.';
+                document.getElementById("formError").innerHTML = formError;
+                return false;
+            }
+            let hex;
+            if (stats.rank === 0) {
+                hex = '#6c7074'
+            } else if (stats.rank === 1) {
+                hex = '#ececec'
+            } else if (stats.rank === 2) {
+                hex = '#6eecd2'
+            } else if (stats.rank === 3) {
+                hex = '#11a036'
+            } else if (stats.rank === 4) {
+                hex = '#c82380'
+            } else if (stats.rank === 5) {
+                hex = '#71ac49'
+            } else if (stats.rank === 6) {
+                hex = '#f1ba6c'
+            } else if (stats.rank === 7) {
+                hex = '#573982'
+            } else if (stats.rank === 8) {
+                hex = '#d63a5c'
+            }
+            let html = '<div><table style="border-collapse: collapse; width: 100%;" border="0"><tbody><tr><td style="width: 150px;"><img src="https://visage.surgeplay.com/bust/150/' + stats.uuid + '" alt="" width="150" height="150" /></td><td><h1 style="color: ' + hex + '; font-family: Mojangles; font-weight: normal;">' + '<img style="image-rendering: pixelated; height: 1em;" src="https://skyscape.cc/assets/ranks/' + stats.rank + '.png" alt="" /> ';
+            if (stats.display_name && (stats.name !== stats.display_name)) {
+                html += stats.display_name + '</h1><h2 style="color: ' + hex + '; font-family: Mojangles; font-weight: normal;"><span style="font-family: Minecraft Ten;">AKA</span> <img style="image-rendering: pixelated; height: 0.75em;" src="https://skyscape.cc/assets/ranks/' + stats.rank + '.png" alt="" /> ' + stats.name + '</h2>';
+            } else {
+                html += stats.name + '</h1>';
+            }
+            html += '</td></tr></tbody></table></div>';
+            document.getElementById("statpage").innerHTML = html;
+        }
+
+        // Auto fill
+        const params = new Proxy(new URLSearchParams(window.location.search), {
+            get: (searchParams, prop) => searchParams.get(prop),
+        });
+        async function prefillInput() {
+            if (params.username !== undefined) {
+                let inputs = await document.getElementsByTagName('input');
+                inputs[0].value = params.username;
+            }
+        }
+        async function submitPrefilledInput() {
+            if (params.username !== undefined) {
+                await prefillInput();
+                try {
+                    await document.forms[0].submit();
+                } catch {
+                    return false;
+                }
+            }
+        }
+
+        // Run Setup
+    </script>
+</head>
+
+<body onload="submitPrefilledInput()">
+    <form action="javascript:;" onsubmit="renderStats()">
+        <label for="username">Username: </label>
+        <input type="text" name="username" maxlength=16>
+        <input type="submit" value="Check Stats">
+    </form>
+    <center id="formError"></center>
+    <br />
+    <p id="statpage"></p>
+</body>
