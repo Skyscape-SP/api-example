@@ -37,7 +37,7 @@
             }
             let url = 'https://skyscape.cc/v2/profile/' + event.target.elements.username.value;
             try {
-                let res = await fetch(url, { "mode": "no-cors" });
+                let res = await fetch(url);
                 if (res.status == 404) {
                     let formError = 'This user doesn\'t seem to exist.';
                     document.getElementById("formError").innerHTML = formError;
