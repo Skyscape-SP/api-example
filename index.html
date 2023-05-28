@@ -3,20 +3,7 @@
     <link rel="icon" type="image/png" href="https://skyscape.cc/favicon.png">
     <link rel="stylesheet" href="https://skyscape.cc/main.css">
     <script>
-        // Functions
-        var wait = (ms) => {
-            const start = Date.now();
-            let now = start;
-            while (now - start < ms) {
-                now = Date.now();
-            }
-        }
-
-        function acesNum(n) {
-            return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        }
-
-        // Game Stat Pages
+        // Validate input
         async function getStats() {
             let formError;
             if (event.target.elements.username.value.length == 0) {
@@ -58,6 +45,8 @@
                 console.log(error);
             }
         }
+
+        // Fetch and render stats
         async function renderStats() {
             document.getElementById("statpage").innerHTML = '';
             let stats = await getStats();
@@ -96,7 +85,7 @@
             document.getElementById("statpage").innerHTML = html;
         }
 
-        // Auto fill
+        // Auto fill query string
         const params = new Proxy(new URLSearchParams(window.location.search), {
             get: (searchParams, prop) => searchParams.get(prop),
         });
@@ -116,8 +105,6 @@
                 }
             }
         }
-
-        // Run Setup
     </script>
 </head>
 
